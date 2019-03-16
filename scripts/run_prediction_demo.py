@@ -52,7 +52,7 @@ def main(sound: bool, save_image: bool) -> None:
     not_messy_count = 0
     cap = cv2.VideoCapture(camera_id)
     pygame.init()
-    pygame.display.set_caption("OpenCV camera stream on Pygame")
+    pygame.display.set_caption("OheyaObeya Classification Demo")
     screen_size = [int(CAMERA_RAW_SIZE[1] * 0.5), int(CAMERA_RAW_SIZE[0] * 0.5)]
     screen = pygame.display.set_mode(screen_size)
     status_font = pygame.font.Font(None, 50)
