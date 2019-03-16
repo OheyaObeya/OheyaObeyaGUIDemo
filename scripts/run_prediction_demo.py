@@ -3,6 +3,7 @@ from pathlib import Path
 import time
 import logging
 
+import numpy as np
 import cv2
 import pygame.mixer
 
@@ -46,10 +47,20 @@ def main(sound: bool) -> None:
     messy_count = 0
     not_messy_count = 0
     cap = cv2.VideoCapture(camera_id)
+    pygame.init()
+    pygame.display.set_caption("OpenCV camera stream on Pygame")
+    screen_size = [int(CAMERA_RAW_SIZE[1] * 0.5), int(CAMERA_RAW_SIZE[0] * 0.5)]
+    # screen = pygame.display.set_mode([CAMERA_RAW_SIZE[0], CAMERA_RAW_SIZE[1]])
+    screen = pygame.display.set_mode(screen_size)
+    status_font = pygame.font.Font(None, 50)
+    status_color = {'messy': (255, 0, 0),
+                    'so-so': (255, 165, 0),
+                    'clean': (181, 255, 20)}
+    sub_font = pygame.font.Font(None, 30)
 
     while True:
         # Capture
-        image = cap.read()[1]
+        ret, image = cap.read()
         path = Path('now.jpg')  # TODO: 保存モード/保存しないモードを用意する
         cv2.imwrite(str(path), image)
 
@@ -57,6 +68,37 @@ def main(sound: bool) -> None:
         result_dict = classify(path)
         display_prediction_result(result_dict)
         result = result_dict['prediction']
+
+        # 画面に表示
+        screen.fill([0, 0, 0])
+
+        # カメラの映像の表示
+        frame = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        frame = np.rot90(frame)
+        frame = pygame.surfarray.make_surface(frame)
+        screen.blit(frame, (0, 0))
+
+        # 判定結果の表示
+        status_text = status_font.render(result, True, status_color[result])
+        screen.blit(status_text, [20, 20])
+        messy_prob = [x['probability'] for x in result_dict['predictions'] if x['label'] == 'messy'][0]
+        messy_prob_text = sub_font.render('{:.2f}'.format(messy_prob), True, (255, 0, 0))
+        screen.blit(messy_prob_text, [20, 60])
+
+        if messy_flag:
+            messy_alarm = '!!! Obeya Alarm!!!'
+            messy_alarm_text = sub_font.render(messy_alarm, True, (255, 0, 0))
+            screen.blit(messy_alarm_text, [20, 90])
+
+            not_messy_bar = '{}: {}'.format(not_messy_count, '*' * not_messy_count)
+            not_messy_bar_text = sub_font.render(not_messy_bar, True, (181, 255, 20))
+            screen.blit(not_messy_bar_text, [100, 60])
+        else:
+            messy_bar = '{}: {}'.format(messy_count, '*' * messy_count)
+            messy_bar_text = sub_font.render(messy_bar, True, (255, 0, 0))
+            screen.blit(messy_bar_text, [100, 60])
+
+        pygame.display.update()
 
         # 汚部屋状態に切り替わったかどうかを判定
         # TODO: 連続した回数ではなく、過去n回分のm%分で判断させる
@@ -76,6 +118,9 @@ def main(sound: bool) -> None:
             messy_flag = False
             alert_obeya(on=False, sound=sound)
 
+        for event in pygame.event.get():
+            pass
+
     cap.release()
 
 
@@ -85,8 +130,7 @@ def display_prediction_result(result_dict: dict) -> None:
     result_emoji = {'messy': '😱',
                     'so-so': '🤔',
                     'clean': '✨'}
-    result_color = {'messy':
-                    Color.PURPLE,
+    result_color = {'messy': Color.PURPLE,
                     'so-so': Color.YELLOW,
                     'clean': Color.GREEN}
     logger.info('{} {} {} {}'.format(result_color[result],
@@ -98,6 +142,7 @@ def display_prediction_result(result_dict: dict) -> None:
 def alert_obeya(on: bool, sound: bool) -> None:
     if on:
         if sound:
+            # 警告BGMを流す
             se_path = str(Path(SOUND_ROOT_PATH) / "obeya_se.wav")
             hayaku_sound = pygame.mixer.Sound(se_path)
             hayaku_sound.play()
