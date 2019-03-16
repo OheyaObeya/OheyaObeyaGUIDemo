@@ -1,18 +1,17 @@
 import argparse
-from pathlib import Path
-import time
-import logging
 from datetime import datetime
+import logging
+from pathlib import Path
 
 import numpy as np
 import cv2
 import pygame.mixer
 
-from secret import settings
 from app_exception import OheyaObeyaError
 from color import Color
 from notifier import notify_slack, upload_to_slack
 from predict import classify
+from secret import settings
 
 # log settings
 logger = logging.getLogger('OheyaObeya')
