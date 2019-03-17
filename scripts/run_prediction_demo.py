@@ -30,7 +30,8 @@ dir_name = datetime.now().strftime("%Y%m%d_%H%M%S")
 DST_IMAGE_PATH = Path('captured') / dir_name
 
 
-def main(sound: bool, save_image: bool) -> None:
+# TODO: モードが増えてきたのでちゃんと設計する
+def main(alert_mode: bool, sound: bool, save_image: bool) -> None:
 
     if sound:
         if not Path(SOUND_ROOT_PATH).exists():
@@ -52,8 +53,7 @@ def main(sound: bool, save_image: bool) -> None:
     cap = cv2.VideoCapture(camera_id)
     pygame.init()
     pygame.display.set_caption("OheyaObeya Classification Demo")
-    screen_size = [int(CAMERA_RAW_SIZE[1] * 0.5), int(CAMERA_RAW_SIZE[0] * 0.5)]
-    screen = pygame.display.set_mode(screen_size)
+    screen = pygame.display.set_mode()
     status_font = pygame.font.Font(None, 50)
     status_color = {'messy': (255, 0, 0),
                     'so-so': (255, 165, 0),
@@ -99,6 +99,7 @@ def main(sound: bool, save_image: bool) -> None:
         frame = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         frame = frame[:, ::-1]
         frame = np.rot90(frame)
+        # frame = frame[:, ::-1]  # 上下を逆にする
         frame = pygame.surfarray.make_surface(frame)
         screen.blit(frame, (0, 0))
 
@@ -111,7 +112,7 @@ def main(sound: bool, save_image: bool) -> None:
         messy_prob_text = sub_font.render('{:.2f}'.format(messy_prob), True, (255, 0, 0))
         screen.blit(messy_prob_text, [20, 60])
 
-        if messy_flag:
+        if messy_flag and alert_mode:
             # スクリーンに警報の文字を表示する
             messy_alarm = '!!! Obeya Alarm!!!'
             messy_alarm_text = sub_font.render(messy_alarm, True, (255, 0, 0))
@@ -130,7 +131,7 @@ def main(sound: bool, save_image: bool) -> None:
         pygame.display.update()
 
         # 汚部屋警報のON/OFFが切り替わったか判定
-        if messy_count > 10 and not messy_flag:
+        if messy_count > 10 and not messy_flag and alert_mode:
             messy_flag = True
             alert_obeya(on=True, sound=sound)
         elif not_messy_count > 10 and messy_flag:
@@ -226,6 +227,9 @@ def check_expected_camera_id() -> int:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='capture.py',
                                      add_help=True)
+    parser.add_argument('-a', '--alert',
+                        help='指定した場合、アラート機能をONにします',
+                        action='store_true')
     parser.add_argument('-s', '--sound',
                         help='指定した場合、音を鳴らします',
                         action='store_true')
@@ -237,7 +241,7 @@ if __name__ == '__main__':
     logger.info('Start.')
 
     try:
-        main(args.sound, args.save_image)
+        main(args.alert, args.sound, args.save_image)
     except OheyaObeyaError as e:
         import traceback
         traceback.print_exc()
