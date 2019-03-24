@@ -1,4 +1,9 @@
 # OheyaObeyaGUIDemo
+OheyaObeyaGUIDemo is a tool to introduce OheyaObeya models briefly.   
+It classifies the desk situation (clean / so-so / messy) in real time from the image taken by the USB camera.
+
+**Note:**   
+- Internally, [OheyaObeyaWebAPI](https://github.com/OheyaObeya/OheyaObeyaWebAPI) is called.
 
 ## Demo Movie
 [![Demo Movie](http://img.youtube.com/vi/Pub1_Nes1tM/0.jpg)](http://www.youtube.com/watch?v=Pub1_Nes1tM)
