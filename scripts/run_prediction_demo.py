@@ -40,6 +40,7 @@ def main(alert_mode: bool, sound: bool, save_image: bool) -> None:
 
         # 実際には以下のサイトから素材を借りた
         # 効果音ラボ: https://soundeffect-lab.info/sound/button/
+        # PANICPUMPKIN: http://pansound.com/panicpumpkin/index.html
         # ※ 再配布不可なのでGitHub上には音源ファイルはuploadしていない
         #   使用する際は指定のパスに適当な音源を配置すること
         pygame.mixer.music.load(str(Path(SOUND_ROOT_PATH) / 'start.mp3'))
@@ -54,11 +55,11 @@ def main(alert_mode: bool, sound: bool, save_image: bool) -> None:
     pygame.init()
     pygame.display.set_caption("OheyaObeya Classification Demo")
     screen = pygame.display.set_mode()
-    status_font = pygame.font.Font(None, 50)
+    status_font = pygame.font.Font(None, 100)
     status_color = {'messy': (255, 0, 0),
                     'so-so': (255, 165, 0),
                     'clean': (181, 255, 20)}
-    sub_font = pygame.font.Font(None, 30)
+    sub_font = pygame.font.Font(None, 60)
 
     if save_image:
         for label_name in ['messy', 'so-so', 'clean']:
@@ -110,23 +111,23 @@ def main(alert_mode: bool, sound: bool, save_image: bool) -> None:
         # スクリーンにmessyの確率を表示する
         messy_prob = [x['probability'] for x in result_dict['predictions'] if x['label'] == 'messy'][0]
         messy_prob_text = sub_font.render('{:.2f}'.format(messy_prob), True, (255, 0, 0))
-        screen.blit(messy_prob_text, [20, 60])
+        screen.blit(messy_prob_text, [20, 100])
 
         if messy_flag and alert_mode:
             # スクリーンに警報の文字を表示する
             messy_alarm = '!!! Obeya Alarm!!!'
             messy_alarm_text = sub_font.render(messy_alarm, True, (255, 0, 0))
-            screen.blit(messy_alarm_text, [20, 90])
+            screen.blit(messy_alarm_text, [20, 150])
 
             # 警報中は、messyじゃない状態が続いたら緑のバーが伸びていく
             not_messy_bar = '{}: {}'.format(not_messy_count, '*' * not_messy_count)
             not_messy_bar_text = sub_font.render(not_messy_bar, True, (181, 255, 20))
-            screen.blit(not_messy_bar_text, [100, 60])
+            screen.blit(not_messy_bar_text, [150, 100])
         else:
             # messyの状態が続いたら赤いバーが伸びていく
             messy_bar = '{}: {}'.format(messy_count, '*' * messy_count)
             messy_bar_text = sub_font.render(messy_bar, True, (255, 0, 0))
-            screen.blit(messy_bar_text, [100, 60])
+            screen.blit(messy_bar_text, [150, 100])
 
         pygame.display.update()
 
