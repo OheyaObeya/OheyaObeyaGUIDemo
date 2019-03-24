@@ -1,0 +1,2 @@
+python-opencv >= 3.4
+pygame >= 1.9
