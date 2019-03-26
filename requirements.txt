@@ -1,3 +1,8 @@
+<<<<<<< HEAD
 opencv-python >= 3.4
 pygame >= 1.9
 requests >= 2.21
+=======
+python-opencv >= 3.4
+pygame >= 1.9
+>>>>>>> 9aea2ef2c84c7ba1c2034e0be105a83271e6455a
